@@ -73,7 +73,7 @@ def update_view_status ( view ):
 		regex += ')( ?, ?[a-z\\.\\-]*)*</string>'
 
 		found = _schemeEditor.find_all( regex, 0 )
-		found = find_matches( scope_name, found )
+		found = find_matches( scope, found )
 		if found != None:
 			_lastScope += found
 
