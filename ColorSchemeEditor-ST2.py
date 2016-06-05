@@ -140,11 +140,17 @@ class NavigationListener ( sublime_plugin.EventListener ):
 	def on_text_command( self, view, command_name, args ):
 		global _schemeEditor, _skipNext
 
-		# `on_selection_modified` will fire twice every time a left-click
-		# occurs; once on mouse-down, once on mouse-up. `on_text_command` will
-		# only fire on mouse-down, so we can use that event to flag a skip.
-		if _schemeEditor != None and command_name == "drag_select":
-			_skipNext = True
+		if _schemeEditor != None:
+			if command_name == "drag_select":
+				# The 'drag_select' text command only fires once (on mouse-down)
+				# but `on_selection_modified` fires twice (on mouse-down and
+				# mouse-up). Use the 'drag_select' command to trigger a skip.
+				_skipNext = True
+			elif command_name == "show_scope_name":
+				# 'show_scope_name' triggers `on_selection_modified` for some
+				# reason. Skip the next `on_selection_modified` when we see a
+				# 'show_scope_name'.
+				_skipNext = True
 
 
 
