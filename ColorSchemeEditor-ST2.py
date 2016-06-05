@@ -2,7 +2,7 @@ import sublime, sublime_plugin, os.path
 
 # globals suck, but don't know how to pass data between the classes
 _schemeEditor = None
-_skipOne = 0
+_skipNext = False
 _wasSingleLayout = None
 _lastScope = None
 _lastScopeIndex = 0
@@ -89,14 +89,14 @@ def update_view_status ( view ):
 
 
 def kill_scheme_editor ():
-	global _schemeEditor, _skipOne, _wasSingleLayout, _lastScope, _lastScopeIndex
+	global _schemeEditor, _skipNext, _wasSingleLayout, _lastScope, _lastScopeIndex
 	if int( sublime.version() ) > 3000 and _wasSingleLayout != None:
 		_wasSingleLayout.set_layout( {
 			'cols': [0.0, 1.0],
 			'rows': [0.0, 1.0],
 			'cells': [[0, 0, 1, 1]]
 		} )
-	_skipOne = 0
+	_skipNext = False
 	_wasSingleLayout = None
 	_schemeEditor = None
 	_lastScope = None
@@ -115,15 +115,15 @@ class NavigationListener ( sublime_plugin.EventListener ):
 				kill_scheme_editor()
 
 	def on_selection_modified ( self, view ):
-		global _schemeEditor, _skipOne
+		global _schemeEditor, _skipNext
 
 		if _schemeEditor != None:
 			if _schemeEditor.id() != view.id() and not view.settings().get( 'is_widget' ):
 				# for some reason this callback is called twice - for mouse down and mouse up
-				if _skipOne == 1:
-					_skipOne = 0
+				if _skipNext:
+					_skipNext = False
 				else:
-					_skipOne = 1
+					_skipNext = True
 					update_view_status( view )
 
 
