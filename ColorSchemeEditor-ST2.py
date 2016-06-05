@@ -119,12 +119,20 @@ class NavigationListener ( sublime_plugin.EventListener ):
 
 		if _schemeEditor != None:
 			if _schemeEditor.id() != view.id() and not view.settings().get( 'is_widget' ):
-				# for some reason this callback is called twice - for mouse down and mouse up
 				if _skipNext:
 					_skipNext = False
 				else:
-					_skipNext = True
 					update_view_status( view )
+
+
+	def on_text_command( self, view, command_name, args ):
+		global _schemeEditor, _skipNext
+
+		# `on_selection_modified` will fire twice every time a left-click
+		# occurs; once on mouse-down, once on mouse-up. `on_text_command` will
+		# only fire on mouse-down, so we can use that event to flag a skip.
+		if _schemeEditor != None and command_name == "drag_select":
+			_skipNext = True
 
 
 
