@@ -65,12 +65,12 @@ def update_view_status ( view ):
 		if len( scope ) == 0:
 			continue
 		dots = scope.count( '.' )
-		regex = '<key>scope</key>\\s*<string>([a-z\\.\\-]* ?, ?)*([a-z\\.\\- ]*'
-		regex += scope.replace( '.', '(\\.' )
+		regex = r'<key>scope</key>\s*<string>([a-z\.\-\+]* ?, ?)*([a-z\.\-\+ ]*'
+		regex += scope.replace( '.', r'(\.' )
 		while dots > 0:
 			regex += ')?'
 			dots -= 1
-		regex += ')( ?, ?[a-z\\.\\-]*)*</string>'
+		regex += r')( ?, ?[a-z\.\-\+]*)*</string>'
 
 		found = _schemeEditor.find_all( regex, 0 )
 		found = find_matches( scope, found )
