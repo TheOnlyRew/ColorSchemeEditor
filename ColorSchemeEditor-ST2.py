@@ -41,11 +41,23 @@ def find_matches ( scope, founds ):
 def display_scope ( region ):
 	global _schemeEditor
 
-	# doesn't change the selection if previous selection was on the same line
 	sel = _schemeEditor.sel()
 	sel.clear()
 	sel.add( region )
 	_schemeEditor.show_at_center( region )
+
+	# Without window focus, the above `show_at_center` will not visibly modify
+	# the current selection unless the new region is on a different line than
+	# the old.
+	# Momentarily give the _schemeEditor View focus to force the re-draw.
+	# We have to capture the current View and Window to make sure the correct
+	# View receives focus after the re-draw.
+	current_window = sublime.active_window()
+	current_view = current_window.active_view()
+	scheme_window = _schemeEditor.window()
+
+	scheme_window.focus_view(_schemeEditor)
+	current_window.focus_view(current_view)
 
 
 def update_view_status ( view ):
@@ -139,7 +151,7 @@ class NavigationListener ( sublime_plugin.EventListener ):
 class EditColorSchemeNextScopeCommand ( sublime_plugin.TextCommand ):
 
 	def run ( self, edit ):
-		global _schemeEditor, _lastScope, _lastScopeIndex
+		global _schemeEditor, _lastScope, _lastScopeIndex, _skipNext
 
 		if _schemeEditor != None and _lastScope != None:
 			scopes = len( _lastScope )
@@ -148,6 +160,9 @@ class EditColorSchemeNextScopeCommand ( sublime_plugin.TextCommand ):
 				if _lastScopeIndex == scopes:
 					_lastScopeIndex = 0
 				display_scope( _lastScope[_lastScopeIndex][1] )
+				# Giving the _schemeEditor focus (as part of `display_scope`)
+				# will trigger an `on_selection_modified`. Skip that one.
+				_skipNext = True
 			sublime.status_message( 'Scope ' + str( _lastScopeIndex + 1 ) + ' of ' + str( scopes ) )
 
 
@@ -155,7 +170,7 @@ class EditColorSchemeNextScopeCommand ( sublime_plugin.TextCommand ):
 class EditColorSchemePrevScopeCommand ( sublime_plugin.TextCommand ):
 
 	def run ( self, edit ):
-		global _schemeEditor, _lastScope, _lastScopeIndex
+		global _schemeEditor, _lastScope, _lastScopeIndex, _skipNext
 
 		if _schemeEditor != None and _lastScope != None:
 			scopes = len( _lastScope )
@@ -165,7 +180,11 @@ class EditColorSchemePrevScopeCommand ( sublime_plugin.TextCommand ):
 				else:
 					_lastScopeIndex -= 1
 				display_scope( _lastScope[_lastScopeIndex][1] )
+				# Giving the _schemeEditor focus (as part of `display_scope`)
+				# will trigger an `on_selection_modified`. Skip that one.
+				_skipNext = True
 			sublime.status_message( 'Scope ' + str( _lastScopeIndex + 1 ) + ' of ' + str( scopes ) )
+
 
 
 class EditCurrentColorSchemeCommand ( sublime_plugin.TextCommand ):
